@@ -7,6 +7,8 @@
 
 # linkedin-scheduler
 
+**Website:** <https://linkedin-scheduler.makisend-poc.workers.dev> (French, with the one-click agent prompt)
+
 Write your LinkedIn posts in advance as Markdown files, give each one a clean image card, and let cron
 publish them on your personal profile through LinkedIn's official API. No server, no web interface, no
 third-party scheduler: a folder, two scripts and a cron line.
