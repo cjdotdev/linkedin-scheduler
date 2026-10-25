@@ -34,11 +34,11 @@ trademarks of their owners: use them to illustrate the technology you write abou
 ```toml
 [card]
 signature = "Your Name - Backend Developer"   # "Name - role": the name is bold
-accent = "#059669"                            # label, accent words, edge, dots
-paper = "#FAFAF9"
-ink = "#111111"
-muted = "#3F3F46"
-rule = "#E4E4E7"
+accent = "#F24822"                            # label, accent words, edge, dots
+paper = "#FAF8F5"
+ink = "#151515"
+muted = "#3F3C38"
+rule = "#E8E2DA"
 mark = ""                                     # optional square SVG/PNG of yours, top-right corner
 
 [browser]

@@ -33,6 +33,15 @@ third-party scheduler: a folder, two scripts and a cron line.
 - **Checks before sending.** `--check` proves your token works, `--dry-run` shows exactly what would go
   out (and `--date` previews another day), limits are checked (3,000 characters, video size and length).
 
+## Install with a coding agent
+
+Open any coding agent at the root of a clone and paste the prompt from
+[docs/AGENT_INSTALL.md](docs/AGENT_INSTALL.md) (everything below its line). The agent checks the repo,
+sets up your cards, walks you through the LinkedIn app, prepares a first post and schedules publishing.
+You keep the LinkedIn clicks and the token in your own hands, and nothing is published without your yes.
+
+Prefer doing it yourself? The quick start below takes about fifteen minutes.
+
 ## Quick start
 
 Requirements: Python 3.11+. For the image cards only: Node.js 18+ and Google Chrome or Chromium.
@@ -85,6 +94,7 @@ Each run publishes at most one ready post of the day and logs to `logs/publish.l
 
 | Guide | Covers |
 |---|---|
+| [Agent install](docs/AGENT_INSTALL.md) | The prompt for a coding agent to set everything up with you |
 | [LinkedIn setup](docs/linkedin-setup.md) | Creating the LinkedIn app, getting and renewing the token |
 | [Writing posts](docs/writing-posts.md) | The post file, its fields, bold hooks, links, media, slots |
 | [Post cards](docs/cards.md) | Card fields, `config.toml`, logos, code samples, your own template |

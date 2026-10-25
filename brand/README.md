@@ -16,10 +16,10 @@ The mark is an **L holding a square in its corner: a post resting in its slot**.
 
 | Name | Hex | Where |
 |---|---|---|
-| Ink | `#111111` | The L, the name |
-| Green | `#059669` | The square (the post), the accent of the cards |
-| Green on dark | `#34D399` | The square on dark backgrounds |
-| Paper | `#FAFAF9` | Light backgrounds |
+| Ink | `#151515` | The L, the name |
+| Orange | `#F24822` | The square (the post), the accent of the cards |
+| Orange on dark | `#FF6633` | The square on dark backgrounds |
+| Cream | `#FAF8F5` | Light backgrounds |
 
 ## Rules
 
