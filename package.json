@@ -1,0 +1,10 @@
+{
+  "name": "linkedin-scheduler",
+  "private": true,
+  "type": "module",
+  "description": "Post cards for linkedin-scheduler (Playwright renders them, Shiki highlights code).",
+  "dependencies": {
+    "playwright-core": "1.49.1",
+    "shiki": "3.23.0"
+  }
+}

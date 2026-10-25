@@ -1,0 +1,10 @@
+# Secrets
+.env
+
+# Runtime
+logs/
+node_modules/
+__pycache__/
+template/.*.html
+
+# Keep posts/ledger.json: it is what stops a post from going out twice.

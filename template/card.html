@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<!-- Post card, 1080x1350 (LinkedIn's 4:5 portrait). Filled by scripts/render_card.py; keep the {{SLOTS}}. -->
+<style>
+@font-face { font-family: "Fraunces"; src: url("fonts/Fraunces.ttf"); font-weight: 100 900; }
+@font-face { font-family: "Inter"; src: url("fonts/Inter.ttf"); font-weight: 100 900; }
+@font-face { font-family: "JetBrains Mono"; src: url("fonts/JetBrainsMono.ttf"); font-weight: 100 800; }
+:root { {{THEME}} }
+* { margin: 0; box-sizing: border-box; }
+html, body { width: 1080px; height: 1350px; background: var(--paper); overflow: hidden; }
+.card { position: relative; width: 1080px; height: 1350px; }
+/* A quiet dot grid, stronger toward the edges, faint behind the text. */
+.grid { position: absolute; inset: 0;
+  background-image: radial-gradient(circle, var(--accent) 2.2px, transparent 2.6px);
+  background-size: 40px 40px; background-position: 20px 20px; opacity: .16;
+  -webkit-mask-image: radial-gradient(ellipse 70% 62% at 50% 50%, rgba(0,0,0,.05) 0%, rgba(0,0,0,.2) 55%, #000 100%);
+          mask-image: radial-gradient(ellipse 70% 62% at 50% 50%, rgba(0,0,0,.05) 0%, rgba(0,0,0,.2) 55%, #000 100%); }
+.edge { position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: var(--accent); }
+.mark { position: absolute; right: 72px; top: 72px; width: 96px; height: 96px; object-fit: contain; }
+.content { position: absolute; left: 120px; right: 120px; top: 200px; bottom: 220px; display: flex; flex-direction: column; justify-content: center; gap: 34px; }
+.eyebrow { display: flex; flex-direction: column; gap: 30px; }
+.eyebrow:empty { display: none; }
+.logo { height: 120px; width: auto; align-self: flex-start; }
+.kicker { font: 600 26px/1 "Inter", sans-serif; color: var(--accent); letter-spacing: .02em; }
+.title { font: 600 76px/1.06 "Fraunces", serif; font-variation-settings: "opsz" 144; color: var(--ink); letter-spacing: -.02em; text-wrap: balance; }
+.title em { font-style: normal; color: var(--accent); }
+.body { font: 400 40px/1.42 "Inter", sans-serif; color: var(--muted); text-wrap: pretty; }
+.code { flex-shrink: 0; border-radius: 20px; background: #121212; box-shadow: 0 18px 40px rgba(0,0,0,.16); overflow: hidden; }
+.code .bar { display: flex; align-items: center; gap: 9px; padding: 16px 22px; background: #1C1C1C; }
+.code .bar i { width: 13px; height: 13px; border-radius: 50%; background: #3A3A3A; }
+.code .bar i:first-child { background: var(--accent); }
+.code .bar span { margin-left: 10px; font: 500 20px/1 "JetBrains Mono", monospace; color: #8A8A8A; }
+.code pre { margin: 0; padding: 22px 30px 24px; font: 400 22px/1.5 "JetBrains Mono", monospace; background: transparent !important; white-space: pre; }
+.has-code .content { gap: 24px; top: 170px; bottom: 200px; }
+.has-code .eyebrow { flex-direction: row; align-items: center; gap: 18px; }
+.has-code .logo { height: 56px; }
+.has-code .title { font-size: 62px; }
+.has-code .body { font-size: 34px; }
+.sign { position: absolute; left: 120px; right: 120px; bottom: 110px; padding-top: 28px; border-top: 2px solid var(--rule); font: 600 26px/1 "Inter", sans-serif; color: var(--ink); }
+.sign span { color: var(--muted); font-weight: 400; }
+.kicker:empty, .body:empty, .sign:empty { display: none; }
+</style></head>
+<body><div class="card{{CARD_CLASS}}">
+  <div class="grid"></div>
+  <div class="edge"></div>
+  {{MARK}}
+  <div class="content">
+    <div class="eyebrow">{{LOGO}}<p class="kicker">{{KICKER}}</p></div>
+    <h1 class="title">{{TITLE}}</h1>
+    <p class="body">{{BODY}}</p>
+    {{CODE}}
+  </div>
+  <p class="sign">{{SIGN}}</p>
+</div></body></html>
