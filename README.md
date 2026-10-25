@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/lockup-on-dark.svg">
+    <img src="brand/lockup.svg" height="64" alt="linkedin-scheduler">
+  </picture>
+</p>
+
 # linkedin-scheduler
 
 Write your LinkedIn posts in advance as Markdown files, give each one a clean image card, and let cron
@@ -28,28 +35,51 @@ third-party scheduler: a folder, two scripts and a cron line.
 
 ## Quick start
 
-Requirements: Python 3.11+, and for the cards Node.js 18+ with Google Chrome or Chromium installed.
+Requirements: Python 3.11+. For the image cards only: Node.js 18+ and Google Chrome or Chromium.
+
+### 1. Set up LinkedIn (once, about 10 minutes)
+
+LinkedIn gives no API key on its own: you create a small app on your account, then generate a token for
+it. Everything is free and self-serve, and the posts go to **your personal profile**.
+
+1. **Create the app** at <https://www.linkedin.com/developers/apps> → **Create app**: a name, any square
+   logo, and a LinkedIn Page (required by LinkedIn; any Page you belong to, or an empty one you create).
+   Skip the Page verification if you are not its admin.
+2. **Add two products** in the app's **Products** tab: **Share on LinkedIn** (permission to post) and
+   **Sign In with LinkedIn using OpenID Connect** (to read your member id). Both are instant.
+3. **Generate a token** with the [token generator](https://www.linkedin.com/developers/tools/oauth/token-generator):
+   pick your app, tick `openid`, `profile` and `w_member_social`, sign in, allow, copy the token.
+4. **Put it in `.env`** with its expiry date (about 60 days from today):
+
+   ```bash
+   cp .env.example .env    # then set LINKEDIN_ACCESS_TOKEN and LINKEDIN_TOKEN_EXPIRES
+   python3 scripts/publish.py --check
+   # Token OK: <your name>
+   # LINKEDIN_PERSON_URN=urn:li:person:...   <- paste this line into .env too
+   ```
+
+That is all the configuration publishing needs: with the token in `.env`, `publish.py` and cron work
+directly. Renew the token every ~60 days (step 3 again; the log warns a week before). Step by step, with the Page
+verification and renewal: [docs/linkedin-setup.md](docs/linkedin-setup.md).
+
+### 2. Write a post
 
 ```bash
-git clone <this repository> && cd linkedin-scheduler
-npm install                          # card rendering only (Playwright drives your Chrome, Shiki colours code)
-cp .env.example .env                 # then follow docs/linkedin-setup.md to get a token
-python3 scripts/publish.py --check   # "Token OK: <your name>"
-```
-
-Write a post (see `posts/texts/_example.md`):
-
-```bash
+npm install                                                       # once, for the image cards
 cp posts/texts/_example.md posts/texts/2026-10-27-1-my-topic.md   # edit date, text, card fields
 python3 scripts/render_card.py posts/texts/2026-10-27-1-my-topic.md
 python3 scripts/publish.py --dry-run --date 2026-10-27            # set status: ready when happy
 ```
 
-Schedule it (`crontab -e`), for example Monday, Wednesday and Friday at 9:00, 13:00 and 18:00:
+### 3. Schedule it
+
+`crontab -e`, for example Monday, Wednesday and Friday at 9:00, 13:00 and 18:00:
 
 ```
 0 9,13,18 * * 1,3,5 /path/to/linkedin-scheduler/scripts/run.sh
 ```
+
+Each run publishes at most one ready post of the day and logs to `logs/publish.log`.
 
 ## Documentation
 
@@ -73,6 +103,7 @@ scripts/          publish.py, render_card.py (+ two small Node helpers), run.sh 
 template/         card.html and its fonts
 config.toml       card colours, signature, Chrome path
 tests/            python3 -m unittest discover tests
+brand/            logo (symbol, lockups, light and dark), icon, GitHub social preview
 ```
 
 ## Limits

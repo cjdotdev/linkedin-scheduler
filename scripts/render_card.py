@@ -31,7 +31,7 @@ ROOT = Path(__file__).resolve().parent.parent
 POSTS = ROOT / "posts"
 TEMPLATE = ROOT / "template" / "card.html"
 THEME_KEYS = ("accent", "paper", "ink", "muted", "rule")
-DEFAULTS = {"signature": "", "accent": "#2563EB", "paper": "#FAFAF9", "ink": "#111111", "muted": "#3F3F46",
+DEFAULTS = {"signature": "", "accent": "#059669", "paper": "#FAFAF9", "ink": "#111111", "muted": "#3F3F46",
             "rule": "#E4E4E7", "mark": ""}
 
 

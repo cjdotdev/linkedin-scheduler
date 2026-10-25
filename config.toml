@@ -4,7 +4,7 @@
 # Bottom line of every card: "Name - role" (the name is bold). A post can override it with card_sign.
 signature = "Your Name - Backend Developer"
 # Colours of the cards (any CSS colour).
-accent = "#2563EB"
+accent = "#059669"
 paper = "#FAFAF9"
 ink = "#111111"
 muted = "#3F3F46"
