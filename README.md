@@ -91,8 +91,19 @@ python3 scripts/publish.py --dry-run --date 2026-10-27            # set status: 
 0,2,4,6,8 9,13,18 * * 1,3,5 /path/to/linkedin-scheduler/scripts/run.sh
 ```
 
-Each run publishes at most one ready post of the day and logs to `logs/publish.log`; a failed try is
-retried two minutes later, and the tries with nothing due leave no trace.
+Each run publishes at most one ready post of the day and logs to `logs/publish.log`. The tries happen
+**only inside the slots**, never in between:
+
+| Slot | Tries |
+|---|---|
+| 9:00 | 9:00, 9:02, 9:04, 9:06, 9:08 |
+| 13:00 | 13:00, 13:02, 13:04, 13:06, 13:08 |
+| 18:00 | 18:00, 18:02, 18:04, 18:06, 18:08 |
+
+- Posted at 9:00: the 4 other tries find nothing due and stop at once, with no trace in the log.
+- Certain failure at 9:00 (network down, LinkedIn refused): retried at 9:02, up to 9:08.
+- Still not out at 9:08: nothing until the next slot (13:00, then 18:00). Never on another day.
+- Unknown outcome (LinkedIn may have the post): never retried, check your profile first.
 
 ## Documentation
 
