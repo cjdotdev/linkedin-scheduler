@@ -84,13 +84,15 @@ python3 scripts/publish.py --dry-run --date 2026-10-27            # set status: 
 
 ### 3. Schedule it
 
-`crontab -e`, for example Monday, Wednesday and Friday at 9:00, 13:00 and 18:00:
+`crontab -e`, for example Monday, Wednesday and Friday at 9:00, 13:00 and 18:00, with 5 tries per slot
+(9:00 to 9:08):
 
 ```
-0 9,13,18 * * 1,3,5 /path/to/linkedin-scheduler/scripts/run.sh
+0,2,4,6,8 9,13,18 * * 1,3,5 /path/to/linkedin-scheduler/scripts/run.sh
 ```
 
-Each run publishes at most one ready post of the day and logs to `logs/publish.log`.
+Each run publishes at most one ready post of the day and logs to `logs/publish.log`; a failed try is
+retried two minutes later, and the tries with nothing due leave no trace.
 
 ## Documentation
 

@@ -156,6 +156,31 @@ class PublishTest(unittest.TestCase):
             sys.argv = argv
         self.assertEqual(self.status("a"), "texts:ready")
 
+    def test_refusal_is_retried_at_the_next_try_of_the_slot(self):
+        self.post("a")
+        self.fail = "4xx"
+        self.assertEqual(self.run_at(9, 0), 0)
+        self.assertEqual(self.run_at(9, 2), 1)
+        self.assertEqual(self.run_at(9, 4), 0)
+
+    def test_due_check_is_quiet_and_sends_nothing(self):
+        import sys
+        self.post("a", time="13:00")
+        argv, sys.argv = sys.argv, ["publish.py", "--due"]
+        try:
+            codes = []
+            for hour in (9, 13):
+                self.clock = self.clock.replace(hour=hour)
+                with self.assertRaises(SystemExit) as exit_:
+                    self.m.main()
+                codes.append(exit_.exception.code)
+        finally:
+            sys.argv = argv
+        self.assertEqual(codes, [1, 0])
+        self.assertEqual(self.posts, 0)
+        self.assertEqual(self.status("a"), "texts:ready")
+        self.assertFalse(self.m.LOG.exists())
+
     def test_bold_hook(self):
         self.assertEqual(self.m.linkedin_text("**Hé 1**"), "𝗛𝗲́ 𝟭")
 

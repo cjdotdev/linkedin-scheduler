@@ -77,11 +77,11 @@ Only when they are happy, set `status: ready`.
 ## 5. Schedule
 
 Ask which days and times they want posts to go out (default: Monday, Wednesday and Friday at 9:00,
-13:00 and 18:00). Show the cron line with the absolute path of this clone, and install it only after
+13:00 and 18:00, each slot tried 5 times two minutes apart, see docs/scheduling.md). Show the cron line with the absolute path of this clone, and install it only after
 they agree:
 
 ```bash
-( crontab -l 2>/dev/null; echo "0 9,13,18 * * 1,3,5 $(pwd)/scripts/run.sh" ) | crontab -
+( crontab -l 2>/dev/null; echo "0,2,4,6,8 9,13,18 * * 1,3,5 $(pwd)/scripts/run.sh" ) | crontab -
 crontab -l
 ```
 

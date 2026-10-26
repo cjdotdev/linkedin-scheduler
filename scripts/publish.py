@@ -22,6 +22,7 @@ posts/ledger.json; a file is marked `publishing` before the request; a lock stop
     python3 scripts/publish.py --check                    # proves the token works, publishes nothing
     python3 scripts/publish.py --dry-run [--date DAY]     # what would go out, sends nothing
     python3 scripts/publish.py                            # publishes (this is what cron runs)
+    python3 scripts/publish.py --due                      # exit 0 if a post is due now, 1 if not; quiet
 
 Credentials come from .env (never committed): LINKEDIN_ACCESS_TOKEN, LINKEDIN_TOKEN_EXPIRES (YYYY-MM-DD)
 and optionally LINKEDIN_PERSON_URN.
@@ -200,6 +201,9 @@ def main():
     if "--check" in sys.argv:
         return check()
     dry_run = "--dry-run" in sys.argv
+    # --due: the quiet check run.sh makes on each of the 5 tries of a slot; the real run logs the details.
+    due = "--due" in sys.argv
+    note = (lambda message: None) if due else log
     day = today().isoformat()
     if "--date" in sys.argv:
         # Only to preview another day: a real run always publishes today's posts and nothing else.
@@ -211,6 +215,8 @@ def main():
     try:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except BlockingIOError:
+        if due:
+            sys.exit(1)
         log("another run is publishing right now: this one stops")
         return
     hhmm = now().strftime("%H:%M")
@@ -224,12 +230,12 @@ def main():
         if not post:
             continue
         if post[0].get("status") == "publishing":
-            log(f"warning: {path.name} is still 'publishing' from a run that did not finish: check LinkedIn, "
+            note(f"warning: {path.name} is still 'publishing' from a run that did not finish: check LinkedIn, "
                 "then set it back to ready or move it to posted/ by hand. It is not retried.")
             continue
         # Missed = dated before the real today (a --date preview of a later day does not count).
         if post[0].get("status") == "ready" and post[0].get("date", "") < today().isoformat():
-            log(f"missed: {path.name} is dated {post[0].get('date')} and was never sent; give it a new date")
+            note(f"missed: {path.name} is dated {post[0].get('date')} and was never sent; give it a new date")
             continue
         if post[0].get("date") == day and post[0].get("status") == "ready":
             slot = post[0].get("time", "09:00")
@@ -240,11 +246,13 @@ def main():
                 continue
             if text_hash(post[1]) in ledger:
                 done = ledger[text_hash(post[1])]
-                log(f"refused {path.name}: the same text was already published ({done['file']}, {done['post_id']})")
+                note(f"refused {path.name}: the same text was already published ({done['file']}, {done['post_id']})")
                 continue
             candidates.append((path, post))
     # The earliest slot first (then the file name): a post missed at 9:00 goes out at the next run.
     candidates.sort(key=lambda c: (c[1][0].get("time", "09:00"), c[0].name))
+    if due:
+        sys.exit(0 if candidates else 1)
     if not candidates:
         log(f"nothing ready for {day}" + (f" yet (later today: {', '.join(later)})" if later else ""))
         if dry_run:
