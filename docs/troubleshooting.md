@@ -1,21 +1,22 @@
 # Troubleshooting
 
-Everything a run does is in `logs/publish.log`.
+Start with `GET /status` (`Authorization: Bearer <ADMIN_TOKEN>`): each post's `status` and `last_error`.
+For more, the Worker's logs: Cloudflare dashboard → your Worker → **Logs**, or `pnpm exec wrangler tail`.
+The sync's output is in the build logs: dashboard → your Worker → **Deployments** (Workers Builds).
 
-| Message | Cause | Fix |
+| What you see | Cause | Fix |
 |---|---|---|
-| `LINKEDIN_ACCESS_TOKEN is missing in .env` | No `.env`, or the key is empty | [linkedin-setup.md](linkedin-setup.md) |
-| `LinkedIn answered 401 … invalid or expired` | The token expired (about 60 days) or was revoked | Generate a new token, update `.env` |
-| `LinkedIn answered 403` | The app lacks **Share on LinkedIn**, or the token was made without `w_member_social` | Add the product, generate the token again with the three scopes |
-| `nothing ready for <day>` | No post dated that day with `status: ready` | Check the date and status; `--dry-run --date` lists that day's posts |
-| `… yet (later today: x.md at 13:00)` | Its time has not come | Normal: a later run publishes it |
-| `missed: … was never sent` | A `ready` post from a past day | Give it a new date |
-| `refused …: the same text was already published` | Duplicate guard | Change the text, or delete the copy |
-| `… still 'publishing' …` | A run stopped while posting | Check LinkedIn, then set `ready` or move it to `posts/posted/` |
-| `media upload failed, back to ready` | Network or LinkedIn problem before the post existed | Nothing to do: the next run retries |
-| `too much content: the card overflows` | The card's text or code does not fit | Shorten it |
-| `chromium.launch` … `not found` | Playwright does not find Chrome | Install Google Chrome, or set `[browser] chrome` in `config.toml` |
-| Nothing happens at the scheduled time | cron not installed, machine off, or wrong path | `crontab -l`; the path must be absolute; `systemctl status cron` (or `crond`) |
-
-The card renderer and the publisher are independent: cards are made in advance on your machine, and
-publishing needs only Python (no Node, no browser) when cron runs.
+| `LINKEDIN_ACCESS_TOKEN is not set` | The secret is missing | [linkedin-setup.md](linkedin-setup.md#3-give-it-to-the-worker) |
+| `LinkedIn 401 … invalid or expired` | The token expired (60 days) or was revoked | [Renew it](linkedin-setup.md#renew-the-token) |
+| `LinkedIn 403` | The app lacks **Share on LinkedIn**, or the token was made without `w_member_social` | Add the product, generate a new token with the three scopes |
+| `LinkedIn 429` | Too many requests today (150 per member) | Nothing: the retries continue; tomorrow resets it |
+| `media … was not found (did the sync run?)` | The image is not in KV yet | Check the build logs; push again |
+| The post stays `scheduled` after its time | The cron is not running | Dashboard → your Worker → **Settings** → **Triggers**: `* * * * *` must be there |
+| `missed` | Pushed after its 10-minute window | Give it a new time and push |
+| `failed: the same text was already posted as …` | Duplicate guard | Change the text, or delete the copy |
+| `unknown` | LinkedIn did not answer clearly after the post was sent | Check your profile. If the post is not there, rename the file (a new name is a new post), set a new time, push |
+| The push did not change anything | Workers Builds is not connected, or the sync stopped on an error | Build logs; [install.md](install.md#deploy-on-every-push) |
+| `Nothing was synced, fix these first` | A post file is invalid (date, time, status, media) | The message lists each file and what is wrong |
+| `… is over 25 MB` | A video too big for KV | Make it smaller, or [enable R2](install.md#videos-over-25-mb) |
+| Times are off by one or more hours | `scheduler.json` timezone | Set your IANA timezone (`Europe/Paris`, `America/New_York`…) and push |
+| You scheduled "in 5 minutes" and it was already late | Your computer's clock is wrong; the Worker uses Cloudflare's | `curl -sI https://www.cloudflare.com \| grep -i '^date'` gives the real time (GMT) |

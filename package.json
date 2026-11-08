@@ -1,10 +1,47 @@
 {
   "name": "linkedin-scheduler",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
-  "description": "Post cards for linkedin-scheduler (Playwright renders them, Shiki highlights code).",
+  "description": "Write LinkedIn posts in Markdown, push, and they publish on time. Runs on your own Cloudflare account.",
+  "license": "MIT",
+  "packageManager": "pnpm@11.1.2",
+  "scripts": {
+    "deploy": "bash scripts/deploy.sh",
+    "setup": "node scripts/setup.mjs",
+    "sync": "node scripts/sync.mjs --remote",
+    "dev": "wrangler dev --test-scheduled",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "sync:local": "node scripts/sync.mjs --local",
+    "types": "wrangler types",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
   "dependencies": {
-    "playwright-core": "1.49.1",
-    "shiki": "3.23.0"
+    "hono": "4.13.17"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "vitest": "5.1.0",
+    "wrangler": "4.158.0"
+  },
+  "cloudflare": {
+    "label": "linkedin-scheduler",
+    "products": ["Workers", "D1", "KV"],
+    "docs_url": "https://github.com/cjdotdev/linkedin-scheduler#readme",
+    "bindings": {
+      "LINKEDIN_ACCESS_TOKEN": {
+        "description": "Your LinkedIn access token with the `w_member_social` scope. Get it in 2 minutes with LinkedIn's Token Generator: https://github.com/cjdotdev/linkedin-scheduler/blob/main/docs/linkedin-setup.md. It lets this Worker post on your profile: it stays on your Cloudflare account."
+      },
+      "LINKEDIN_TOKEN_EXPIRES": {
+        "description": "The day the token expires, as `YYYY-MM-DD`: about 60 days after you generated it. `/status` warns 7 days before."
+      },
+      "ADMIN_TOKEN": {
+        "description": "A long random string that protects `/status` and `/check`, e.g. `openssl rand -hex 24`. Keep a copy."
+      },
+      "DRY_RUN": {
+        "description": "`0` publishes for real. `1` only logs what would be posted (useful for a first test)."
+      }
+    }
   }
 }

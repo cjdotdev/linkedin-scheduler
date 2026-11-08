@@ -1,0 +1,9 @@
+# Secrets the "Deploy to Cloudflare" button asks for. Descriptions are in package.json (cloudflare.bindings).
+# For local development: cp .dev.vars.example .dev.vars (never commit .dev.vars).
+
+# LinkedIn access token with the w_member_social scope (docs/linkedin-setup.md).
+LINKEDIN_ACCESS_TOKEN=
+# The day the token expires, YYYY-MM-DD (about 60 days after you generated it).
+LINKEDIN_TOKEN_EXPIRES=
+# Protects GET /status and POST /check. A long random string: openssl rand -hex 24
+ADMIN_TOKEN=

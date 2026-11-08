@@ -1,23 +1,20 @@
 # Writing posts
 
-One post = one Markdown file in `posts/texts/`, named `YYYY-MM-DD-<n>-<topic>.md` (`n` orders the posts
-of one day). Files starting with `_` are templates and are never published.
+One post = one Markdown file in `posts/texts/`. Name it after its day, e.g. `2026-12-01-launch.md`: the
+file name (without `.md`) is the post's id. Files starting with `_` are templates and are never synced.
 
 ```markdown
 ---
-date: 2026-10-27
+date: 2026-12-01
 time: 09:00
-status: draft
-media: images/2026-10-27-1-my-topic.png
+status: ready
 visibility: PUBLIC
+media: images/launch.png
 first_comment: The docs: https://example.com
-card_kicker: TypeScript
-card_title: One rule, *written once*
-card_body: Validate at runtime, type at compile time, document.
 ---
-**TypeScript protects you… until the data comes from outside.**
+**The hook, in bold.**
 
-The text of the post…
+The text of the post.
 
 #typescript #backend
 ```
@@ -26,35 +23,47 @@ The text of the post…
 
 | Field | Required | Meaning |
 |---|---|---|
-| `date` | yes | The day it goes out (local time of the machine running cron). |
-| `time` | no | Its slot, `09:00` by default. It goes out at that time or at the first run after it. |
-| `status` | yes | `draft` (ignored), `ready` (will be published), then `posted` (set by the script). |
-| `media` | no | One image (`png`, `jpg`, `gif`) or one `mp4` video, relative to `posts/`. |
+| `date` | yes | The day it goes out, `YYYY-MM-DD`, in the timezone of `scheduler.json`. |
+| `time` | no | `HH:MM`, `defaultTime` of `scheduler.json` otherwise (`09:00`). |
+| `status` | yes | `draft` (kept out of the queue) or `ready` (scheduled). |
+| `media` | no | One image (`png`, `jpg`, `gif`) or one `mp4` video, relative to `posts/` (e.g. `images/x.png`), or an `https://` URL. |
 | `visibility` | no | `PUBLIC` (default) or `CONNECTIONS`. |
 | `first_comment` | no | Posted as your first comment, right after the post. |
-| `card_*` | no | The image card, see [cards.md](cards.md). |
 
-An inline comment after a value (`  # like this`) is allowed in the header.
+A comment after a value (`  # like this`, with spaces around `#`) is allowed in the header. Hashtags and
+URLs with `#` are kept.
 
 ## The text
 
-- **Bold:** LinkedIn has no markup. Write `**words**` and the script sends them in Unicode bold
-  (accented letters included). Keep it for the hook: screen readers read these characters poorly.
-- **Links:** LinkedIn shows posts with external links to fewer people. Put links in `first_comment`
-  and say so in the text ("The link is in the comments").
-- **Length:** at most 3,000 characters; the script refuses longer posts.
-- **Video:** `mp4`, 75 KB to 200 MB, 3 seconds to 10 minutes (checked with `ffprobe` when installed).
+- **Bold:** LinkedIn has no markup. Write `**words**` and they are sent in Unicode bold (accented letters
+  included). Keep it for the hook: screen readers read these characters poorly.
+- **Links:** LinkedIn shows posts with external links to fewer people. Put links in `first_comment`.
+- **Length:** at most 3,000 characters.
+- **Video:** `mp4`, up to 25 MB in KV, up to 200 MB with the optional R2 bucket.
 
-## Check before it goes out
+## Timezone
 
-```bash
-python3 scripts/publish.py --dry-run --date 2026-10-27
+`scheduler.json`:
+
+```json
+{ "timezone": "Europe/Paris", "defaultTime": "09:00" }
 ```
 
-It prints the post exactly as it will be sent (bold included), its media, visibility and first comment,
-and sends nothing. When you are happy, set `status: ready`.
+Times in posts are in that timezone; the database stores them in UTC, so daylight saving changes are
+handled.
 
-## After it is published
+## Before you push
 
-The file moves to `posts/posted/` with `status: posted`, `posted_at`, `post_id` and `url`. To change a
-published post, edit or delete it on LinkedIn: the scripts never touch published posts.
+The push checks every post before writing anything: one wrong file (bad date, missing image) stops the
+whole sync with the list of errors, and nothing changes. To see exactly what a push would do:
+
+```bash
+pnpm exec wrangler login        # once
+node scripts/sync.mjs --remote --dry-run
+```
+
+## Changing or deleting a post
+
+- **Not yet published:** edit the file and push. Any change (text, time, status) re-arms the post, with
+  its tries reset. Delete the file and push: the post is cancelled.
+- **Already published:** the scheduler never touches it again. Edit or delete it on LinkedIn.

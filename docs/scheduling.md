@@ -1,63 +1,58 @@
-# Scheduling
+# When posts go out
 
-Publishing is one command, run by cron: `scripts/run.sh` calls `scripts/publish.py` and appends
-everything to `logs/publish.log`.
+## Every minute
 
-```
-# crontab -e — Monday, Wednesday and Friday, 5 tries from 9:00, 13:00 and 18:00
-0,2,4,6,8 9,13,18 * * 1,3,5 /path/to/linkedin-scheduler/scripts/run.sh
-```
+A Cron Trigger (`* * * * *`) wakes the Worker. It takes the **earliest** post that is `scheduled` (or
+`retrying`) and whose time has come, and publishes it. At most one post per minute: two posts in the same
+slot go out a minute apart.
 
-Use any days and hours you like; three slots a day let up to three posts go out and catch a missed one.
+## Retries
 
-## Five tries per slot
+A post due at 9:00 is tried at 9:00. If the try fails before the post exists (network, image upload,
+LinkedIn refusing with a `4xx`), it is tried again every minute, **up to 9:10**. Still failing at 9:10, it
+becomes `failed`, and `last_error` says why.
 
-Each slot is tried 5 times, two minutes apart (9:00, 9:02, 9:04, 9:06, 9:08), then nothing until the
-next slot. A try that failed for a certain reason (network down, LinkedIn refused) is retried two
-minutes later instead of hours later; a machine that wakes up at 9:03 still posts at 9:04.
+A post pushed late but inside its window (at 9:04 for 9:00) goes out at the next minute. A post pushed
+after its window is `missed`: give it a new time.
 
-Every try starts with `publish.py --due`, a quiet check that sends and logs nothing: a try with nothing
-due (already published, or its time has not come) leaves no trace in `logs/publish.log`. Since a run
-publishes at most one post and a published post leaves `posts/texts/`, the other tries cannot post it
-again. Want one try per slot? Use `0 9,13,18 * * 1,3,5`.
+## Never twice
 
-## What a run does
+- **The claim:** before sending, the Worker switches the post to `publishing` with a single `UPDATE` that
+  only succeeds if nobody else did. Two overlapping runs cannot both send it.
+- **Unclear answers are not retried:** if LinkedIn answers `5xx` or the connection drops after the post
+  request was sent, the post may be out. It is marked `unknown` and never retried: check your profile.
+- **Same text, once:** a text identical to an already posted one (spaces aside) is refused.
+- **Posted is final:** a push never changes a post that is `posted`, `publishing` or `unknown`.
 
-1. Takes the posts dated **today**, `status: ready`, whose `time` (default `09:00`) has come.
-2. Publishes the **earliest** one, and only one: posts of a busy day stay spaced by your runs.
-3. Moves it to `posts/posted/`, records its text in `posts/ledger.json`, adds the first comment.
+## Statuses
 
-So:
-
-| Situation | What happens |
+| Status | Meaning |
 |---|---|
-| LinkedIn refuses at 9:00 (network, 4xx) | Retried at 9:02, up to 9:08, then at 13:00. |
-| Machine off from 9:00 to 9:10 | The 9:00 post goes out at 13:00 (or 18:00). |
-| Two posts at 09:00 and 13:00, machine on from 12:30 | 09:00's at 13:00, 13:00's at 18:00. |
-| A post from a past day still `ready` | Never sent late; the log says `missed`: give it a new date. |
-| Same text in two files | The second is refused. |
-| Two runs at once | The second stops (lock). |
+| `draft` | In D1, not scheduled (`status: draft` in the file) |
+| `scheduled` | Waiting for its time |
+| `publishing` | A run is sending it right now |
+| `retrying` | A try failed; the next one is in a minute (`last_error`) |
+| `posted` | Out; `post_url` is the link |
+| `failed` | Still failing after 10 minutes, or cannot work (too long, same text already posted) |
+| `missed` | Its time passed before any try: give it a new date |
+| `unknown` | LinkedIn did not answer clearly after the post was sent: check your profile |
+| `cancelled` | Its file was deleted before it went out |
 
-cron does not run jobs missed while the machine was off. If you need every slot, run it on a machine
-that stays on (a small VPS or a home server with the same folder and `.env`).
+## The history
 
-## Failures
-
-- **Certain failure** (network down before sending, media upload failed, LinkedIn refused with a 4xx):
-  the post goes back to `ready` and the next try retries it (two minutes later, or at the next slot).
-- **Unknown outcome** (LinkedIn answered 5xx, or the connection dropped while the post was being created):
-  the post stays `publishing` and is never retried, so it cannot appear twice. Check your profile, then
-  set it back to `ready` (it did not go out) or move it to `posts/posted/` (it did).
-- **Failed first comment:** the post stays published; the log says to add the comment by hand.
-
-## Testing the schedule
-
-Preview a day without sending anything:
+D1 is the history: every post, its status, its tries, its last error and its link. See it with
+`GET /status`, or:
 
 ```bash
-python3 scripts/publish.py --dry-run --date 2026-10-27
+pnpm exec wrangler d1 execute DB --remote --command \
+  "SELECT slug, status, local_time, attempts, last_error, post_url FROM posts ORDER BY scheduled_at DESC"
 ```
 
-To test the whole chain for real, create a throwaway post dated today with `visibility: CONNECTIONS`,
-add a one-off cron line a few minutes ahead (`40 15 25 10 * /path/to/scripts/run.sh`), check your
-profile, then delete the post on LinkedIn and remove the line.
+Each push compares every file with its row (a hash of everything the file says): new files are inserted,
+edited ones re-armed, unchanged ones left alone. Media work the same way: only files whose content
+changed are uploaded.
+
+## Testing without posting
+
+Set `DRY_RUN` to `1` (dashboard → Settings → Variables and Secrets): the Worker logs what it would post
+and marks it `posted` with a fake link. Set it back to `0` to post for real.

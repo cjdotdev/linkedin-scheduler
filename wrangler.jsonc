@@ -1,0 +1,41 @@
+{
+	// linkedin-scheduler v2: one Worker on YOUR Cloudflare account. The "Deploy to Cloudflare" button
+	// reads this file, creates the D1 database and the KV namespace on your account, and writes their
+	// ids here in your copy of the repository. Installing by hand: `pnpm run setup` does the same.
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "my-linkedin-scheduler",
+	"main": "src/cloudflare/index.ts",
+	"compatibility_date": "2026-10-01",
+
+	// The check runs every minute; a post is tried at its time, then every minute for 10 minutes.
+	"triggers": { "crons": ["* * * * *"] },
+
+	"observability": { "enabled": true },
+
+	// Posts, their status and their history.
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "linkedin-scheduler",
+			"database_id": "00000000-0000-4000-8000-000000000000",
+			"migrations_dir": "migrations"
+		}
+	],
+
+	// Images and videos up to 25 MB. KV is part of the Workers free plan: no card needed.
+	"kv_namespaces": [
+		{
+			"binding": "MEDIA",
+			"id": "00000000000000000000000000000000"
+		}
+	],
+
+	// Optional, only for videos over 25 MB (LinkedIn accepts up to 200 MB). R2 asks for a payment
+	// method on your Cloudflare account. To use it, create a bucket and uncomment:
+	// "r2_buckets": [{ "binding": "MEDIA_R2", "bucket_name": "linkedin-scheduler-media" }],
+
+	"vars": {
+		// "1": the Worker logs what it would post and marks it posted, without calling LinkedIn.
+		"DRY_RUN": "0"
+	}
+}
