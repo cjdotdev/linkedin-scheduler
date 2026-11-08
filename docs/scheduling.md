@@ -54,5 +54,7 @@ changed are uploaded.
 
 ## Testing without posting
 
-Set `DRY_RUN` to `1` (dashboard → Settings → Variables and Secrets): the Worker logs what it would post
-and marks it `posted` with a fake link. Set it back to `0` to post for real.
+`DRY_RUN` lives in `wrangler.jsonc`, under `vars` (the Deploy button writes your answer there). Set it to
+`"1"` and push: the Worker logs what it would post and marks it `posted` with a fake link, without calling
+LinkedIn. Set it back to `"0"` and push to post for real. Changing it in the dashboard does not last: the
+next push deploys the value from `wrangler.jsonc` again.
