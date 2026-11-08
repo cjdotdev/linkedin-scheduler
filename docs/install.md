@@ -11,7 +11,9 @@ LinkedIn token ([linkedin-setup.md](linkedin-setup.md)): every way of installing
    app; you can limit it to the repositories you choose.
 2. **Tick "Create private Git repository".** Your copy will hold your posts, drafts included. It is
    unchecked by default.
-3. Name the project, the D1 database and the KV namespace (the defaults are fine).
+3. Name the project, the D1 database and the KV namespace. **Use names that no Worker, database or
+   namespace on your account already has**: Cloudflare reuses an existing database with the same name
+   instead of creating a new one.
 4. Fill in the secrets: `LINKEDIN_ACCESS_TOKEN`, `LINKEDIN_TOKEN_EXPIRES` (`YYYY-MM-DD`),
    `ADMIN_TOKEN` (a long random string, keep a copy), `DRY_RUN` (`1` for a first test, `0` to post).
 5. **Deploy.** Cloudflare creates the database and the namespace, writes their ids into your copy's

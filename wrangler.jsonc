@@ -12,11 +12,16 @@
 
 	"observability": { "enabled": true },
 
-	// Posts, their status and their history.
+	// The Worker's own URL (<name>.<subdomain>.workers.dev) for /status; no preview URLs per version.
+	"workers_dev": true,
+	"preview_urls": false,
+
+	// Posts, their status and their history. Give it a name no other database on your account has:
+	// Cloudflare reuses an existing database with the same name instead of creating one.
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "linkedin-scheduler",
+			"database_name": "my-linkedin-scheduler",
 			"database_id": "00000000-0000-4000-8000-000000000000",
 			"migrations_dir": "migrations"
 		}

@@ -37,9 +37,25 @@ function wrangler(params, { capture = false } = {}) {
 
 // Binding names, not resource names: the Deploy button lets you rename the database and the namespace.
 function query(command) {
-  const out = wrangler(["d1", "execute", "DB", TARGET, "--json", "--command", command], { capture: true });
+  let out;
+  try {
+    out = wrangler(["d1", "execute", "DB", TARGET, "--json", "--command", command], { capture: true });
+  } catch (e) {
+    const detail = String(e.stdout ?? e.message);
+    if (/no such (column|table)/.test(detail)) {
+      console.error(`The D1 database bound as DB does not have linkedin-scheduler v2's tables:
+  ${detail.match(/no such (column|table)[^"\\]*/)?.[0]}
+It was probably made by something else (Cloudflare reuses an existing database with the same name).
+Nothing was changed. Point "database_id" in wrangler.jsonc at a new database, or reinstall with a new database name.`);
+      process.exit(1);
+    }
+    throw e;
+  }
   return JSON.parse(out.slice(out.indexOf("[")))[0].results;
 }
+
+// Fail early, before any upload, if the database is not this project's.
+query("SELECT slug, media FROM posts LIMIT 0");
 
 function walk(dir) {
   if (!existsSync(dir)) return [];

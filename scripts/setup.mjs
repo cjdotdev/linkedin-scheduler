@@ -38,7 +38,9 @@ try {
 step(2, "D1 database and KV namespace");
 let config = readFileSync(WRANGLER, "utf8");
 if (config.includes(PLACEHOLDER_D1)) {
-  const name = await ask("Name of the D1 database?", "linkedin-scheduler");
+  const name = await ask("Name of the D1 database (new, not used on your account)?", "my-linkedin-scheduler");
+  const existing = JSON.parse(capture(["d1", "list", "--json"])).map((d) => d.name);
+  if (existing.includes(name)) throw new Error(`a D1 database named ${name} already exists on this account: run setup again with another name`);
   const out = capture(["d1", "create", name]);
   const id = out.match(/database_id["\s:=]+"([0-9a-f-]{36})"/)?.[1];
   if (!id) throw new Error(`could not read the database id from:\n${out}`);
@@ -46,11 +48,11 @@ if (config.includes(PLACEHOLDER_D1)) {
   console.log(`Created D1 ${name} (${id})`);
 } else console.log("D1 already set in wrangler.jsonc.");
 if (config.includes(PLACEHOLDER_KV)) {
-  const out = capture(["kv", "namespace", "create", "linkedin-scheduler-media"]);
+  const out = capture(["kv", "namespace", "create", "my-linkedin-scheduler-media"]);
   const id = out.match(/\bid["\s:=]+"([0-9a-f]{32})"/)?.[1];
   if (!id) throw new Error(`could not read the namespace id from:\n${out}`);
   config = config.replace(PLACEHOLDER_KV, id);
-  console.log(`Created KV linkedin-scheduler-media (${id})`);
+  console.log(`Created KV my-linkedin-scheduler-media (${id})`);
 } else console.log("KV already set in wrangler.jsonc.");
 writeFileSync(WRANGLER, config);
 
