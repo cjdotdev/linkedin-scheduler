@@ -21,6 +21,8 @@ LinkedIn token ([linkedin-setup.md](linkedin-setup.md)): every way of installing
    `wrangler.jsonc`, and runs `pnpm run deploy`.
 
 From then on, **every push to your copy's main branch deploys and syncs your posts** (Workers Builds).
+Your Worker's URL is printed near the end of the build log (`https://<name>.<subdomain>.workers.dev`);
+the build log is in the dashboard → your Worker → **Deployments**.
 
 Next: set your timezone in `scheduler.json` (`"timezone": "Europe/Paris"`, an IANA name; `UTC` by
 default), write a post, push.

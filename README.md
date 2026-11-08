@@ -13,8 +13,9 @@ no server, no subscription, and nobody else ever holds your posts or your token.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cjdotdev/linkedin-scheduler)
 
-> **Tick "Create private Git repository"** on the button's page: your copy of this repository will hold
-> your posts, drafts included.
+> **On the button's page:** tick **Create private Git repository** (your copy holds your posts, drafts
+> included; it is unchecked by default), and give the Worker, the database and the KV namespace **names
+> nothing on your account already has** (Cloudflare reuses an existing database with the same name).
 
 ## How it works
 
@@ -25,34 +26,42 @@ cron * * * * * ──► Worker: earliest due post ─► LinkedIn (image or vid
 
 - **A post is a Markdown file** in `posts/texts/` with a small header: date, time, `status: ready`,
   optional image or video, optional first comment.
-- **Every push** deploys the Worker and syncs your posts to a D1 database and your media to KV, on your
-  account. Only what changed is sent.
+- **Every push** to your copy deploys the Worker and syncs your posts to a D1 database and your media to
+  Workers KV, on your account, through Workers Builds. Only what changed is sent. No GitHub secrets.
 - **Every minute**, the Worker publishes the earliest post whose time has come. A failed try is retried
   every minute for 10 minutes (9:00 … 9:10), then marked `failed` with the reason.
 - **Never twice.** A post is claimed atomically before it is sent; an unclear answer from LinkedIn is
   marked `unknown` and never retried; the same text is never posted twice; a posted post is never
   touched again by a sync.
 - **Your data stays yours.** The repository, the database, the media, the token and the LinkedIn app are
-  all on your accounts.
+  all on your accounts. The project has no server and no telemetry.
 
 ## What you need
 
-- A **Cloudflare** account (free plan) and a **GitHub** account.
+- A **Cloudflare** account (free plan, no card needed) and a **GitHub** (or GitLab) account.
 - A **LinkedIn app** with *Share on LinkedIn*, and an access token: [docs/linkedin-setup.md](docs/linkedin-setup.md).
-  It takes about 5 minutes; the token lasts 60 days.
+  About 5 minutes; LinkedIn requires a Company Page to create the app (an empty one works); the token
+  lasts 60 days.
 
 ## Install
 
 Three ways, same result ([docs/install.md](docs/install.md)):
 
-1. **The button above.** Cloudflare copies this repository into your GitHub, creates the database and the
-   media store, asks for your LinkedIn token, and deploys. Every later push redeploys.
+1. **The button above** (about 3 minutes). Cloudflare copies this repository into your GitHub, creates
+   the database and the media store, writes their ids into your copy, asks for your LinkedIn token and
+   `DRY_RUN`, and deploys. Every later push to your copy redeploys and syncs.
 2. **A coding agent.** Paste [docs/AGENT_INSTALL.md](docs/AGENT_INSTALL.md) into Claude Code, Cursor or
-   any agent opened in a clone of your copy.
+   any agent opened in a clone of your private copy.
 3. **By hand.** `pnpm install && pnpm run setup`.
 
-Then set your timezone in `scheduler.json`, write a post ([docs/writing-posts.md](docs/writing-posts.md)),
-push, and check `GET /status`.
+Then:
+
+1. Set your timezone in `scheduler.json` (`"timezone": "Europe/Paris"`; `UTC` by default).
+2. Write a post ([docs/writing-posts.md](docs/writing-posts.md)), push.
+3. Check `GET /status` with your `ADMIN_TOKEN`.
+
+For a first test, keep `DRY_RUN` at `"1"` in `wrangler.jsonc`: posts are marked `posted` with a fake link
+and nothing reaches LinkedIn. Set it to `"0"` and push to post for real.
 
 ## A post
 
@@ -76,7 +85,7 @@ The rest of the post.
 |---|---|---|
 | Images and videos up to 25 MB, in `posts/images/` or `posts/videos/` | Workers KV | no |
 | A file already online | `media: https://...` | no |
-| Videos over 25 MB (LinkedIn accepts up to 200 MB) | R2, optional ([install.md](docs/install.md#videos-over-25-mb)) | yes |
+| Videos over 25 MB (LinkedIn accepts up to 200 MB) | R2, optional ([install.md](docs/install.md#videos-over-25-mb)) | yes, Cloudflare asks for one to enable R2 |
 
 ## Routes
 
@@ -87,7 +96,7 @@ The rest of the post.
 ## Limits
 
 - **The LinkedIn token lasts 60 days** and cannot be refreshed automatically outside LinkedIn's partner
-  programs. `/status` warns 7 days before `LINKEDIN_TOKEN_EXPIRES`.
+  programs. `/status` warns 7 days before `LINKEDIN_TOKEN_EXPIRES`; renewing takes 2 minutes.
 - **Personal profile only.** Company pages need a LinkedIn partner permission.
 - **To the minute**, and at most one post per minute.
 
@@ -96,11 +105,13 @@ The rest of the post.
 | File | What |
 |---|---|
 | [docs/install.md](docs/install.md) | The three ways to install, deploying on every push, R2 for big videos |
-| [docs/linkedin-setup.md](docs/linkedin-setup.md) | LinkedIn app, token, renewing it |
-| [docs/writing-posts.md](docs/writing-posts.md) | The post format |
-| [docs/scheduling.md](docs/scheduling.md) | When posts go out, retries, statuses, the history |
+| [docs/linkedin-setup.md](docs/linkedin-setup.md) | LinkedIn app, token, renewing it, what catches people out |
+| [docs/writing-posts.md](docs/writing-posts.md) | The post format, timezone, editing and deleting posts |
+| [docs/scheduling.md](docs/scheduling.md) | When posts go out, retries, statuses, the history, `DRY_RUN` |
+| [docs/updating.md](docs/updating.md) | Getting new versions into your copy |
 | [docs/troubleshooting.md](docs/troubleshooting.md) | What went wrong and how to fix it |
 | [docs/AGENT_INSTALL.md](docs/AGENT_INSTALL.md) | The prompt for a coding agent |
+| [AGENTS.md](AGENTS.md) | For contributors: layout, rules that must hold, commands |
 
 ## Development
 

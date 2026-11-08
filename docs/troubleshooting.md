@@ -18,5 +18,8 @@ The sync's output is in the build logs: dashboard → your Worker → **Deployme
 | The push did not change anything | Workers Builds is not connected, or the sync stopped on an error | Build logs; [install.md](install.md#deploy-on-every-push) |
 | `Nothing was synced, fix these first` | A post file is invalid (date, time, status, media) | The message lists each file and what is wrong |
 | `… is over 25 MB` | A video too big for KV | Make it smaller, or [enable R2](install.md#videos-over-25-mb) |
+| `does not have linkedin-scheduler v2's tables` (build log) | The Worker is bound to a database made by something else: Cloudflare reused an existing database with the same name | Nothing was changed. Reinstall with a new database name, or point `database_id` in `wrangler.jsonc` at a new database |
+| Posts show `posted` with a `dry-run` link, nothing on LinkedIn | `DRY_RUN` is `"1"` | Set `"DRY_RUN": "0"` in `wrangler.jsonc` and push (the dashboard value is overwritten by each push) |
+| The first build failed right after the button | Usually a name already used on the account | Read the end of the build log; fix, then **Retry build** in the dashboard |
 | Times are off by one or more hours | `scheduler.json` timezone | Set your IANA timezone (`Europe/Paris`, `America/New_York`…) and push |
 | You scheduled "in 5 minutes" and it was already late | Your computer's clock is wrong; the Worker uses Cloudflare's | `curl -sI https://www.cloudflare.com \| grep -i '^date'` gives the real time (GMT) |
