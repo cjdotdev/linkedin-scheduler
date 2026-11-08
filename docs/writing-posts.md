@@ -39,7 +39,8 @@ URLs with `#` are kept.
   included). Keep it for the hook: screen readers read these characters poorly.
 - **Links:** LinkedIn shows posts with external links to fewer people. Put links in `first_comment`.
 - **Length:** at most 3,000 characters.
-- **Video:** `mp4`, up to 25 MB in KV, up to 200 MB with the optional R2 bucket.
+- **Video:** `mp4`, up to 25 MB in KV (a short, web-compressed clip usually fits), up to 200 MB with the
+  optional R2 bucket. LinkedIn processes a video for up to a few minutes before it is posted.
 
 ## Timezone
 
