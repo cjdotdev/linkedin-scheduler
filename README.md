@@ -1,14 +1,14 @@
 <p align="center">
-  <a href="https://inkslot.makisend-poc.workers.dev">
+  <a href="https://inkslot.joelcodja.com">
     <img src="docs/media/inkslot-banner.png" width="820" alt="inkslot: write in Markdown, post on time">
   </a>
 </p>
 
 <p align="center">
-  <a href="https://inkslot.makisend-poc.workers.dev"><b>Website</b></a> ·
-  <a href="https://inkslot.makisend-poc.workers.dev/docs/"><b>Docs</b></a> ·
-  <a href="https://inkslot.makisend-poc.workers.dev/deploy/"><b>Deploy guide</b></a> ·
-  <a href="https://inkslot.makisend-poc.workers.dev/changelog/"><b>Changelog</b></a>
+  <a href="https://inkslot.joelcodja.com"><b>Website</b></a> ·
+  <a href="https://inkslot.joelcodja.com/docs/"><b>Docs</b></a> ·
+  <a href="https://inkslot.joelcodja.com/deploy/"><b>Deploy guide</b></a> ·
+  <a href="https://inkslot.joelcodja.com/changelog/"><b>Changelog</b></a>
 </p>
 
 # inkslot
@@ -25,7 +25,7 @@ server, no subscription, and nobody else ever holds your posts or your token.
 > **On the button's page:** tick **Create private Git repository** (your copy holds your posts, drafts
 > included; it is unchecked by default), and give the Worker, the database and the KV namespace **names
 > nothing on your account already has** (Cloudflare reuses an existing database with the same name).
-> The [deploy guide](https://inkslot.makisend-poc.workers.dev/deploy/) gets the four values it asks for
+> The [deploy guide](https://inkslot.joelcodja.com/deploy/) gets the four values it asks for
 > ready in your browser first.
 
 ## Watch
@@ -155,7 +155,7 @@ See [docs/scheduling.md](docs/scheduling.md) for what each one means.
 
 ## Docs
 
-Also on the website: [inkslot.makisend-poc.workers.dev/docs](https://inkslot.makisend-poc.workers.dev/docs/).
+Also on the website: [inkslot.joelcodja.com/docs](https://inkslot.joelcodja.com/docs/).
 
 | File | What |
 |---|---|
