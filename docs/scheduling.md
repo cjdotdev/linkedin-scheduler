@@ -26,17 +26,28 @@ after its window is `missed`: give it a new time.
 
 ## Statuses
 
-| Status | Meaning |
-|---|---|
-| `draft` | In D1, not scheduled (`status: draft` in the file) |
-| `scheduled` | Waiting for its time |
-| `publishing` | A run is sending it right now |
-| `retrying` | A try failed; the next one is in a minute (`last_error`) |
-| `posted` | Out; `post_url` is the link |
-| `failed` | Still failing after 10 minutes, or cannot work (too long, same text already posted) |
-| `missed` | Its time passed before any try: give it a new date |
-| `unknown` | LinkedIn did not answer clearly after the post was sent: check your profile |
-| `cancelled` | Its file was deleted before it went out |
+A post file only declares two statuses: `status: ready` puts it in the queue, and `status: draft` (the
+default) keeps it out. The sync maps `ready` to `scheduled`; from there the Worker sets the status as the
+post is sent, retried, posted or stopped, and the sync cancels a post whose file is deleted. Never write
+`scheduled`, `publishing`, `retrying`, `posted`, `failed`, `missed`, `unknown` or `cancelled` in the
+file: they are process states in D1.
+
+The path is `ready` (in the file) → `scheduled` → `publishing` → `posted`. A failed try goes to
+`retrying` and then either back to `publishing` or, after 10 minutes, to `failed`. An unclear answer goes
+to `unknown`; a scheduled post whose time passed before any try becomes `missed`; deleting the file
+cancels a post that has not gone out.
+
+| Status | Meaning | Set by |
+|---|---|---|
+| `draft` | In D1, not scheduled (`status: draft`, or no `status` in the file) | The file, or the sync's default |
+| `scheduled` | Waiting for its time (`status: ready` in the file) | The sync |
+| `publishing` | A run is sending it right now | The Worker, when it claims the post |
+| `retrying` | A try failed; the next one is in a minute (`last_error`) | The Worker |
+| `posted` | Out; `post_url` is the link | The Worker |
+| `failed` | Still failing after 10 minutes, or cannot work (too long, same text already posted) | The Worker |
+| `missed` | Its time passed before any try: give it a new date | The Worker |
+| `unknown` | LinkedIn did not answer clearly after the post was sent: check your profile | The Worker |
+| `cancelled` | Its file was deleted while it was `draft`, `scheduled` or `retrying` | The sync |
 
 ## The history
 

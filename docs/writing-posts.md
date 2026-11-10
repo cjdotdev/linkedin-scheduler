@@ -25,7 +25,7 @@ The text of the post.
 |---|---|---|
 | `date` | yes | The day it goes out, `YYYY-MM-DD`, in the timezone of `scheduler.json`. |
 | `time` | no | `HH:MM`, `defaultTime` of `scheduler.json` otherwise (`09:00`). |
-| `status` | yes | `draft` (kept out of the queue) or `ready` (scheduled). |
+| `status` | no | `draft` (kept out of the queue, the default) or `ready` (scheduled). These are the only values you write; the sync and the Worker set the rest. See [When posts go out](scheduling.md#statuses). |
 | `media` | no | One image (`png`, `jpg`, `gif`) or one `mp4` video, relative to `posts/` (e.g. `images/x.png`), or an `https://` URL. |
 | `visibility` | no | `PUBLIC` (default) or `CONNECTIONS`. |
 | `first_comment` | no | Posted as your first comment, right after the post. |
